@@ -12,7 +12,7 @@ export function Nav({ role, fullName }: { role: Role; fullName: string | null })
     ...(role === "owner" ? [{ href: "/", label: "Resultados" }] : []),
     { href: "/pedidos", label: "Pedidos" },
     { href: "/clientes", label: "Clientes" },
-    ...(role === "owner" ? [{ href: "/catalogo", label: "Catálogo" }] : []),
+    ...(role === "owner" || role === "manager" ? [{ href: "/catalogo", label: "Catálogo" }] : []),
   ];
 
   return (

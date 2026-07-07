@@ -1,9 +1,9 @@
-import { requireOwner } from "@/lib/dal";
+import { requireOwnerOrManager } from "@/lib/dal";
 import { ProductForm } from "@/app/(app)/catalogo/product-form";
 import { createProduct } from "@/app/actions/products";
 
 export default async function NuevoProductoPage() {
-  await requireOwner();
+  await requireOwnerOrManager();
 
   return (
     <div className="flex flex-col gap-6">

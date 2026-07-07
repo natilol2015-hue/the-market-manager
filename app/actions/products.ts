@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient as createSupabaseClient } from "@/lib/supabase/server";
-import { requireOwner } from "@/lib/dal";
+import { requireOwnerOrManager } from "@/lib/dal";
 
 function splitList(value: FormDataEntryValue | null): string[] {
   return String(value ?? "")
@@ -25,7 +25,7 @@ function readProductFields(formData: FormData) {
 }
 
 export async function createProduct(_prevState: unknown, formData: FormData) {
-  await requireOwner();
+  await requireOwnerOrManager();
   const fields = readProductFields(formData);
 
   if (!fields.name) {
@@ -48,7 +48,7 @@ export async function updateProduct(
   _prevState: unknown,
   formData: FormData
 ) {
-  await requireOwner();
+  await requireOwnerOrManager();
   const fields = readProductFields(formData);
 
   if (!fields.name) {
@@ -68,7 +68,7 @@ export async function updateProduct(
 }
 
 export async function deleteProduct(id: string) {
-  await requireOwner();
+  await requireOwnerOrManager();
   const supabase = await createSupabaseClient();
   await supabase.from("products").delete().eq("id", id);
   revalidatePath("/catalogo");

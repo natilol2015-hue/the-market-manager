@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getSession } from "@/lib/dal";
+import { TaskBoard } from "@/app/(app)/pedidos/task-board";
 import type { OrderOrigin } from "@/lib/supabase/types";
 
 const STATUS_LABEL: Record<string, string> = {
@@ -15,7 +16,7 @@ export default async function PedidosPage({
 }: {
   searchParams: Promise<{ origin?: string }>;
 }) {
-  await getSession();
+  const { user, profile } = await getSession();
   const { origin } = await searchParams;
   const supabase = await createClient();
 
@@ -25,12 +26,16 @@ export default async function PedidosPage({
     query = query.eq("origin", origin as OrderOrigin);
   }
 
-  const [{ data: orders }, { data: clients }] = await Promise.all([
-    query,
-    supabase.from("clients").select("id, name"),
-  ]);
+  const [{ data: orders }, { data: clients }, { data: tasks }, { data: people }] =
+    await Promise.all([
+      query,
+      supabase.from("clients").select("id, name"),
+      supabase.from("tasks").select("*").order("created_at", { ascending: false }),
+      supabase.from("profiles").select("*"),
+    ]);
 
   const clientNameById = new Map((clients ?? []).map((c) => [c.id, c.name]));
+  const canManageTasks = profile.role === "owner" || profile.role === "manager";
 
   const filters: { label: string; value?: string }[] = [
     { label: "Todos" },
@@ -39,7 +44,15 @@ export default async function PedidosPage({
   ];
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-10">
+      <TaskBoard
+        tasks={tasks ?? []}
+        people={people ?? []}
+        currentUserId={user.id}
+        canManage={canManageTasks}
+      />
+
+      <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-xl font-semibold">Pedidos</h1>
         <Link
@@ -112,6 +125,7 @@ export default async function PedidosPage({
             )}
           </tbody>
         </table>
+      </div>
       </div>
     </div>
   );

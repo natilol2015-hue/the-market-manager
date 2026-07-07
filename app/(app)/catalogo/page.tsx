@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { requireOwner } from "@/lib/dal";
+import { requireOwnerOrManager } from "@/lib/dal";
 
 export default async function CatalogoPage() {
-  await requireOwner();
+  await requireOwnerOrManager();
   const supabase = await createClient();
   const { data: products } = await supabase
     .from("products")

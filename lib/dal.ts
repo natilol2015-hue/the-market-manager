@@ -34,3 +34,11 @@ export async function requireOwner() {
   }
   return profile;
 }
+
+export async function requireOwnerOrManager() {
+  const { profile } = await getSession();
+  if (profile.role !== "owner" && profile.role !== "manager") {
+    redirect("/pedidos");
+  }
+  return profile;
+}

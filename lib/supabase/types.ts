@@ -1,10 +1,12 @@
-export type Role = "owner" | "seller";
+export type Role = "owner" | "manager" | "seller";
 export type OrderOrigin = "online" | "whatsapp";
 export type OrderStatus = "pendiente" | "confirmado" | "entregado" | "cancelado";
+export type TaskStatus = "pendiente" | "hecha";
 
 export type Profile = {
   id: string;
   full_name: string | null;
+  email: string | null;
   role: Role;
   created_at: string;
 };
@@ -54,6 +56,17 @@ export type OrderItem = {
   color: string | null;
 };
 
+export type Task = {
+  id: string;
+  title: string;
+  notes: string | null;
+  assigned_to: string | null;
+  status: TaskStatus;
+  due_date: string | null;
+  created_by: string | null;
+  created_at: string;
+};
+
 // Minimal hand-authored schema typing for the Supabase client.
 // Regenerate with `npx supabase gen types typescript` once the project is linked
 // if you want fully generated types instead.
@@ -93,6 +106,12 @@ export type Database = {
           product_name: string;
         };
         Update: Partial<OrderItem>;
+        Relationships: [];
+      };
+      tasks: {
+        Row: Task;
+        Insert: Partial<Task> & { title: string };
+        Update: Partial<Task>;
         Relationships: [];
       };
     };

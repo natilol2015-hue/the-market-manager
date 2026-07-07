@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { requireOwner } from "@/lib/dal";
+import { requireOwnerOrManager } from "@/lib/dal";
 import { ProductForm } from "@/app/(app)/catalogo/product-form";
 import { updateProduct, deleteProduct } from "@/app/actions/products";
 
@@ -10,7 +10,7 @@ export default async function ProductoDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  await requireOwner();
+  await requireOwnerOrManager();
   const supabase = await createClient();
   const { data: product } = await supabase.from("products").select("*").eq("id", id).single();
 
