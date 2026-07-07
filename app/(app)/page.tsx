@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { requireOwner } from "@/lib/dal";
+import { getSession } from "@/lib/dal";
+import { TaskBoard } from "@/app/(app)/pedidos/task-board";
 
 const RANGES: Record<string, number | null> = {
   "7": 7,
@@ -14,12 +16,21 @@ export default async function DashboardPage({
 }: {
   searchParams: Promise<{ range?: string }>;
 }) {
-  await requireOwner();
+  const { user, profile } = await getSession();
+  if (profile.role !== "owner") {
+    redirect("/pedidos");
+  }
   const { range: rawRange } = await searchParams;
   const range = rawRange && rawRange in RANGES ? rawRange : "30";
   const days = RANGES[range];
 
   const supabase = await createClient();
+
+  const { data: tasks } = await supabase
+    .from("tasks")
+    .select("*")
+    .order("created_at", { ascending: false });
+  const { data: people } = await supabase.from("profiles").select("*");
 
   let ordersQuery = supabase
     .from("orders")
@@ -71,6 +82,8 @@ export default async function DashboardPage({
 
   return (
     <div className="flex flex-col gap-8">
+      <TaskBoard tasks={tasks ?? []} people={people ?? []} currentUserId={user.id} canManage />
+
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-xl font-semibold">Resultados</h1>
         <div className="flex gap-1">
